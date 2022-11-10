@@ -1,8 +1,9 @@
 :root {
-    --round_grad_main: radial-gradient(circle, rgba(34,34,34,1) 0%, rgba(15,15,15,1) 94%, rgba(19,19,19,1) 100%);
+    --round_grad_main: radial-gradient(circle, rgba(34, 34, 34, 1) 0%, rgba(15, 15, 15, 1) 94%, rgba(19, 19, 19, 1) 100%);
 }
 
-html, body {
+html,
+body {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -10,8 +11,61 @@ html, body {
     padding: 0px;
     width: 100%;
     height: 100%;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 body {
+    display: grid;
+    grid-template-rows: auto 1.5em;
+}
+
+main {
     background: var(--round_grad_main);
+    position: relative;
+}
+
+footer {
+    background: #333;
+}
+
+.infoOverlay {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    pointer-events: none;
+    width: 100%;
+    height: 100%;
+    font-size: 1.5em;
+    color: white;
+    -webkit-text-stroke: 1px #555;
+    z-index: 9999;
+    opacity: 0.5;
+    text-align: center;
+}
+
+.editSection {
+    display: grid;
+    grid-template-columns: 288px auto;
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: relative;
+}
+
+.sidebar {
+    background: #ffffff90;
+    margin: 0.25em;
+    border-radius: 0.25em;
+    backdrop-filter: blur(2px);
+}
+
+canvas {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    object-fit: contain;
+    z-index: 9998;
 }
