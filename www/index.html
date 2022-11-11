@@ -9,7 +9,46 @@
 
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="icon" href="hw.ico">
-    <script src="_electron/main.js" defer></script>
+    <script defer>
+        var current_map = {};
+
+        function createElementsFromArray(array) {
+            const container = document.createElement('div');
+            let sub_elms = [];
+            array.forEach(a=>{
+                let new_elm = document.createElement(a.type);
+                new_elm.classList.add(...a.classList);
+                new_elm.value = a?.value;
+                new_elm.innerHTML = a?.innerHTML;
+                try {
+                    let other = createElementsFromArray(a.elements);
+                    new_elm.appendChild(other);
+                    sub_elms.push(other);
+                } catch(e) {
+
+                }
+                container.appendChild(new_elm);
+            });
+     
+            return container;
+        }
+
+        function makePopup(data = {
+            title: "",
+            elements: [{
+                type: "div",
+                classList: ["", ""],
+                value: "",
+                innerHTML: "",
+                elements: [{
+                }]
+            }]
+        }) {
+            document.getElementById('pop_title').innerHTML = data.title;
+            document.querySelector('.body').appendChild(createElementsFromArray(data.elements))
+        }
+        require('./_electron/main.js');
+    </script>
 
 </head>
 
@@ -22,6 +61,32 @@
             </div>
 
             <div id="canvas_container"></div>
+        </div>
+        <div class="popup">
+            <div class="container">
+                <div class="header">
+                    <div id="pop_title">
+                        Example Title
+                    </div>
+                </div>
+                <div class="body">
+                    <div id="new_map">
+                        <div class="half line">
+                            <div class="label">Map Name</div>
+                            <input placeholder="sample" id="nm_name">
+                        </div>
+
+                        <div class="half line">
+                            <div class="label">Map Dimensions</div>
+                            <div class="half">
+                                <input placeholder="22" id="nm_dx" type="number">
+                                <input placeholder="22" id="nm_dy" type="number">
+                            </div>
+                        </div>
+                        <button class="newmap full">Create</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
     <footer></footer>

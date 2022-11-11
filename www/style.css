@@ -1,5 +1,10 @@
 :root {
-    --round_grad_main: radial-gradient(circle, rgba(34, 34, 34, 1) 0%, rgba(15, 15, 15, 1) 94%, rgba(19, 19, 19, 1) 100%);
+    --round_grad_main: radial-gradient(circle, rgb(245, 245, 245) 0%, rgb(236, 236, 236) 94%, rgb(245, 245, 245)100%);
+}
+
+* {
+    color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 html,
@@ -11,7 +16,6 @@ body {
     padding: 0px;
     width: 100%;
     height: 100%;
-    font-family: 'Courier New', Courier, monospace;
 }
 
 body {
@@ -45,7 +49,7 @@ footer {
 
 .editSection {
     display: grid;
-    grid-template-columns: 288px auto;
+    grid-template-columns: 192px auto;
     width: 100%;
     height: 100%;
     display: none;
@@ -53,7 +57,7 @@ footer {
 }
 
 .sidebar {
-    background: #ffffff90;
+    background: #aaaaaaaa;
     margin: 0.25em;
     border-radius: 0.25em;
     backdrop-filter: blur(2px);
@@ -68,4 +72,126 @@ canvas {
     image-rendering: pixelated;
     object-fit: contain;
     z-index: 9998;
+    pointer-events: none;
+}
+
+ul.hw_ul {
+    list-style-type: none;
+    margin: 0px;
+    padding: 0px;
+}
+
+ul.hw_ul li {
+    display: grid;
+    grid-template-columns: 60% 40%;
+}
+
+ul.hw_ul li div {
+    background: #ffffff20;
+}
+
+ul.hw_ul li div:first-child {
+    padding: 4px;
+    margin: 1px;
+}
+ul.hw_ul li div:last-child {
+    padding: 1px;
+    margin: 1px;
+}
+
+ul.hw_ul li button {
+    background: #ffffff10;
+    border: none;
+    margin: 1px;
+    padding: 4px;
+}
+
+.half {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    width: 100%;
+}
+
+.half div {
+    padding: 0px;
+    margin: 0px;
+    background: none;
+}
+
+.newmap {
+    display: block;
+    width: calc(100%);
+    padding: 4px;
+    border: none;
+    margin: 0px;
+    cursor: pointer;
+}
+
+.popup {
+    display: block;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    backdrop-filter: blur(2px) contrast(110%) brightness(90%);
+}
+
+.popup .container {
+    background: #fff;
+    border: solid 1px #777;
+    box-shadow: 2px 2px 15px #000;
+    width: 640px;
+    left: 50%;
+    top: 50%;
+    position: absolute;
+    transform: translateX(-50%) translateY(-50%);
+    border-radius: 5px;
+    border-bottom-color: rgb(37, 37, 37);
+    border-right-color: rgb(226, 191, 191);
+}
+
+.popup .header {
+    background: #ccc;
+    height: 1em;
+    border-bottom: solid 1px #aaa;
+    border-radius: 5px 5px 0px 0px;
+    padding: 0.25em;
+    color: #333;
+    text-align: center;
+}
+
+.popup .body {
+    padding: 4px;
+}
+
+.label {
+    font-size: 1.25em;
+    text-align: center;
+}
+
+.popup input {
+    margin: 0px;
+    display: block;
+    font-size: 1.25em;
+    border: none;
+    border-left: solid 1px #ccc;
+    font-family:'Courier New', Courier, monospace;
+    outline: none;
+}
+
+button.full {
+    display: block;
+    width: 100%;
+    padding: 4px;
+    margin: 1px;
+    background: #eee;
+    border: solid 1px #aaa;
+    border-radius: 5px;
+}
+
+.line {
+    border: solid 1px #ccc;
+    margin-bottom: 4px;
 }
