@@ -1,5 +1,11 @@
+const fs = require('fs');
+const { setBusy, setCamera, drawCurrentTiles } = require('../canvas');
+
 class Menu {
-    constructor() {
+
+    run(current_working_data, core) {
+        this.current_working_data = current_working_data;
+        this.core = core;
         this.initialize();
         this.createDomElements();
     }
@@ -24,10 +30,16 @@ class Menu {
         let li = document.createElement('li');
         let div1 = document.createElement('div');
         div1.addEventListener("click", function() {
-            alert(file)
+            current_map = JSON.parse(fs.readFileSync(file, 'utf-8'));
+            setBusy(false);
+            setCamera(160, 90);
+            document.querySelector('.sidebar').innerHTML = '';
+            drawCurrentTiles();
+            document.querySelector('.editSection').classList.add('tile_select');
+            document.querySelector('.infoOverlay').innerHTML = "Editing Map";
         });
         div1.innerHTML = label;
-        let div2 = this._createDeleteButtons();
+        let div2 = this._createDeleteButtons(file);
 
         li.appendChild(div1);
         li.appendChild(div2);
@@ -37,7 +49,7 @@ class Menu {
         this.items.push(li);
     }
 
-    _createDeleteButtons() {
+    _createDeleteButtons(fileLink) {
         let div = document.createElement('div');
         div.classList.add('half');
 
@@ -49,12 +61,18 @@ class Menu {
         div.appendChild(edit);
         div.appendChild(del);
 
-        edit.addEventListener('click', function() {
+        edit.addEventListener('click', () => {
 
         });
-        del.addEventListener('click', function() {
-            if(confirm(`Are you sure you want to delete this item?`)) {
+        del.addEventListener('click', () => {
+            if(confirm(`Are you sure you want to delete the map ${fileLink.split('/').pop()}?`)) {
+                fs.unlink(`${fileLink}`, (err)=>{
+                    if(err) alert(err);
+                    this.current_working_data.files = fs.readdirSync(`${this.current_working_data.path}`)
+                    this.core.run(this.current_working_data);
+                })
             } else {
+               
             }
         });
 

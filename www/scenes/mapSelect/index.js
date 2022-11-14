@@ -9,7 +9,9 @@ const Scene = new class {
 
     initialize(current_working_data) {
         this.sidebar = document.querySelector('.sidebar');
+        this.sidebar.innerHTML = "";
         this.menu = new Menu();
+        this.menu.run(current_working_data, this);
 
         this._createItems(current_working_data);
         this.sidebar.appendChild(this.menu.container);
@@ -18,6 +20,9 @@ const Scene = new class {
     _createItems(current_working_data) {
         const newitem = document.createElement('button');
         newitem.innerHTML = `New Map`;
+        newitem.onclick = function() {
+            showPopup("Create a new map")
+        }
         newitem.classList.add('newmap');
         this.sidebar.appendChild(newitem);
         for(let i in current_working_data.files) {
@@ -32,7 +37,6 @@ const Scene = new class {
 
     run(current_working_data) {
         this.initialize(current_working_data);
-        
     }
 }
 

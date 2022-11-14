@@ -1,0 +1,5 @@
+{
+    "modeTrigger": "ground",
+    "collision": [false,false,false,false],
+    "layer_z": 0
+}

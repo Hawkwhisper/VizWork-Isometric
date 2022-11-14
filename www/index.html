@@ -10,44 +10,15 @@
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="icon" href="hw.ico">
     <script defer>
-        var current_map = {};
+        var current_map = {mode: "none"};
 
-        function createElementsFromArray(array) {
-            const container = document.createElement('div');
-            let sub_elms = [];
-            array.forEach(a=>{
-                let new_elm = document.createElement(a.type);
-                new_elm.classList.add(...a.classList);
-                new_elm.value = a?.value;
-                new_elm.innerHTML = a?.innerHTML;
-                try {
-                    let other = createElementsFromArray(a.elements);
-                    new_elm.appendChild(other);
-                    sub_elms.push(other);
-                } catch(e) {
 
-                }
-                container.appendChild(new_elm);
-            });
-     
-            return container;
-        }
-
-        function makePopup(data = {
-            title: "",
-            elements: [{
-                type: "div",
-                classList: ["", ""],
-                value: "",
-                innerHTML: "",
-                elements: [{
-                }]
-            }]
-        }) {
-            document.getElementById('pop_title').innerHTML = data.title;
-            document.querySelector('.body').appendChild(createElementsFromArray(data.elements))
-        }
-        require('./_electron/main.js');
+        const { showPopup,
+            hidePopup,
+            processNewMap,
+            current_working_data,
+            main } = require('./_electron/main.js');
+        main();
     </script>
 
 </head>
@@ -83,7 +54,10 @@
                                 <input placeholder="22" id="nm_dy" type="number">
                             </div>
                         </div>
-                        <button class="newmap full">Create</button>
+                        <div class="half">
+                            <button class="newmap full" onclick="processNewMap()">Create</button>
+                            <button class="newmap full" onclick="hidePopup()">Cancel</button>
+                        </div>
                     </div>
                 </div>
             </div>
