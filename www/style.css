@@ -241,6 +241,10 @@ button.full {
     border-radius: 5px;
 }
 
+button.selected {
+    filter: brightness(50%) contrast(120%);
+}
+
 .line {
     border: solid 1px #ccc;
     margin-bottom: 4px;

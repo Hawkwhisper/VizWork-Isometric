@@ -32,7 +32,7 @@ class Menu {
         div1.addEventListener("click", function() {
             current_map = JSON.parse(fs.readFileSync(file, 'utf-8'));
             setBusy(false);
-            setCamera(160, 90);
+            setCamera(32, 16);
             document.querySelector('.sidebar').innerHTML = '';
             drawCurrentTiles();
             document.querySelector('.editSection').classList.add('tile_select');

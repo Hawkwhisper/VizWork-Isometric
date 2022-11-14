@@ -1,6 +1,6 @@
 const { readdir, readFile, writeFile, readFileSync, writeFileSync } = require('fs');
 
-const { floor, round, abs } = Math;
+const { floor, round, abs, atan2 } = Math;
 
 const rd = readdir;
 const wf = writeFile;
@@ -35,7 +35,7 @@ gridSelector = new Image();
 gridSelector.src = `${process.cwd()}/www/img/grid.png`;
 
 function initializeTiles() {
-    
+
     const { current_working_data } = require('../../_electron/main.js');
     rd(`${process.cwd()}/www/img/tiles`, (err, files) => {
         if (err) {
@@ -71,7 +71,53 @@ function initializeTiles() {
         })
     })
 }
+var DRAW_LAYER = 0;
 
+var layerContainer
+var layerLabel
+var layerInput
+
+var layerTool = 0;
+var layerToolArray = [];
+(() => {
+    let item = document.createElement('button');
+    item.innerText = "Pen";
+    item.onclick = function () {
+        layerTool = 0;
+        drawCurrentTiles();
+    }
+    layerToolArray.push(item);
+})();
+
+(() => {
+    let item = document.createElement('button');
+    item.innerText = "Line";
+    item.onclick = function () {
+        layerTool = 1;
+        drawCurrentTiles();
+    }
+    layerToolArray.push(item);
+})();
+
+(() => {
+    let item = document.createElement('button');
+    item.innerText = "Rect";
+    item.onclick = function () {
+        layerTool = 2;
+        drawCurrentTiles();
+    }
+    layerToolArray.push(item);
+})();
+
+(() => {
+    let item = document.createElement('button');
+    item.innerText = "Paint";
+    item.onclick = function () {
+        layerTool = 3;
+        drawCurrentTiles();
+    }
+    layerToolArray.push(item);
+})();
 function drawCurrentTiles() {
     const lconf = Object.keys(layerConf);
 
@@ -85,11 +131,34 @@ function drawCurrentTiles() {
 
     lconfValues = lconfValues.sort((a, b) => b.layer_z - a.layer_z);
     console.log(lconfValues);
+
     document.querySelector('.sidebar').innerHTML = "";
+
+    layerContainer = document.createElement('div');
+    layerContainer.classList.add('half');
+    layerLabel = document.createElement('span');
+    layerLabel.innerHTML = `Layer`;
+    layerInput = document.createElement('input');
+    layerInput.type = 'number';
+    layerInput.value = 0;
+
+    layerContainer.appendChild(layerLabel);
+    layerContainer.appendChild(layerInput);
+
+    for (let i = 0; i < layerToolArray.length; i++) {
+        layerContainer.appendChild(layerToolArray[i]);
+        if (i == layerTool) {
+            layerToolArray[i].classList.add('selected');
+        } else {
+            layerToolArray[i].classList.remove('selected');
+        }
+    }
+
+    document.querySelector('.sidebar').appendChild(layerContainer);
     for (let z in lconfValues) {
         let i = lconfValues[z].title;
         const container = document.createElement('div');
-        container.innerHTML = `<code>${i}</code><br>Layer ${layerConf[i].layer_z}<hr>`;
+        container.innerHTML = `<code>${i}</code><hr>`;
 
         document.querySelector('.sidebar').appendChild(container);
         for (let j = 0; j < layers[i].length; j++) {
@@ -108,12 +177,14 @@ var camera = {
 }
 function drawIsoGrid() {
     drawMapTiles();
-
+    if (!current_map.tiles[DRAW_LAYER]) current_map.tiles[DRAW_LAYER] = {};
+    DRAW_LAYER = parseInt(layerInput.value);
     // mapCanvas.width = window.innerWidth - 224;
     // mapCanvas.height = window.innerHeight = 32;
     mapCtx.imageSmoothingEnabled = false;
+    mapCtx.beginPath();
     mapCtx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
-
+    mapCtx.lineWidth = 1;
     for (let y = 0; y < current_map.height; y++) {
         for (let x = 0; x < current_map.width; x++) {
             let mx = (16 + (x * 32)) + camera.x;
@@ -129,18 +200,78 @@ function drawIsoGrid() {
 
     let xmouse = (round(mouse.editorX / 16) * 16);
     let ybmp = xmouse / 16 % 2 == 1 ? 0 : 8;
-    let ymouse = (round(mouse.editorY / 16) * 16) - ybmp;
-    if(NOW_DRAWING.img) mapCtx.drawImage(NOW_DRAWING.img, -16 + xmouse + camera.x % 32, -32 + ymouse + camera.y % 16);
+    let ymouse = (round((mouse.editorY + ybmp) / 16) * 16) - ybmp;
+    if (NOW_DRAWING.img) mapCtx.drawImage(NOW_DRAWING.img, -16 + xmouse + camera.x % 32, -32 + ymouse + camera.y % 16);
     mapCtx.drawImage(gridSelector, -16 + xmouse + camera.x % 32, -16 + ymouse + camera.y % 16);
     const tilex = xmouse / 16;
     const tiley = ymouse / 8;
 
     if (current_map.mode == "draw") {
-        if (!current_map.tiles[NOW_DRAWING.id]) current_map.tiles[NOW_DRAWING.id] = {};
-        current_map.tiles[NOW_DRAWING.id][`${tilex}x${tiley}`] = {
-            tile: NOW_DRAWING,
-            x: -16 + xmouse + camera.x % 32,
-            y: -32 + ymouse + camera.y % 16
+        if (!current_map.tiles[DRAW_LAYER]) current_map.tiles[DRAW_LAYER] = {};
+        switch (layerTool) {
+            //Pen
+            case 0:
+                current_map.tiles[DRAW_LAYER][`${tilex}x${tiley}`] = {
+                    tile: NOW_DRAWING,
+                    x: -16 + xmouse + camera.x % 32,
+                    y: -32 + ymouse + camera.y % 16
+                }
+                break;
+
+            //line
+            case 1:
+                (() => {
+                    let angle = atan2(mouse.editorClickY - mouse.editorY, mouse.editorClickX - mouse.editorX);
+                    let distance = ((mouse.editorClickY - mouse.editorY) + (mouse.editorClickX - mouse.editorX));
+                    let iterations = round(abs(distance / 16));
+
+                    let _xdraw = mouse.editorClickX > mouse.editorX ? mouse.editorX : mouse.editorClickX;
+                    let _ydraw = mouse.editorClickY > mouse.editorY ? mouse.editorY : mouse.editorClickY;
+                    console.log(mouse)
+                    for (let k = 0; k < iterations; k++) {
+                        let ybmp = round(_xdraw / 16) % 2 == 1 ? 0 : 8;
+                        if (NOW_DRAWING.img) mapCtx.drawImage(NOW_DRAWING.img,
+                            -16 +
+                            //x pos
+                            round(_xdraw / 16) * 16
+                            + camera.x % 32,
+                            -32 +
+                            //y pos
+                            (round((_ydraw + ybmp) / 16) * 16) - ybmp
+                            + camera.y % 16);
+                        _xdraw += mouse.editorClickX > mouse.editorX ? Math.cos(angle) * 16 : -Math.cos(angle) * 16;
+                        // _ydraw += mouse.editorClickY > mouse.editorY ? Math.sin(-angle) * 16 : Math.sin(angle) * 16;
+                        if(mouse.editorClickY > mouse.editorY) {
+                        if(mouse.editorClickX >= mouse.editorX) {
+                            _ydraw += Math.sin(-angle)*16;
+                        } else {
+                            _ydraw += Math.sin(angle)*16;
+                        }
+                        } else {
+                            if(mouse.editorClickX >= mouse.editorX) {
+                                _ydraw += Math.sin(angle)*16;
+                            } else {
+                                _ydraw += Math.sin(-angle)*16;
+                            }
+                        }
+                    }
+                    mapCtx.beginPath();
+                    mapCtx.strokeStyle = "#55ff89";
+                    mapCtx.lineWidth = 1;
+                    mapCtx.moveTo(mouse.editorClickX, mouse.editorClickY);
+                    mapCtx.lineTo(mouse.editorX, mouse.editorY);
+                    mapCtx.stroke();
+                })();
+                break;
+        }
+    }
+
+    if (current_map.mode == "erase") {
+        if (!current_map.tiles[DRAW_LAYER]) current_map.tiles[DRAW_LAYER] = {};
+        switch (layerTool) {
+            case 0:
+                delete current_map.tiles[DRAW_LAYER][`${tilex}x${tiley}`];
+                break;
         }
     }
 
@@ -187,7 +318,9 @@ module.exports = {
         mapCanvas.height = 360;
 
         mapCanvas.addEventListener('mousedown', (e) => {
-            console.log(e);
+            shouldClear = true;
+            mouse.editorClickX = (mapCanvas.width / mapCanvas.getBoundingClientRect().width) * e.layerX;
+            mouse.editorClickY = (mapCanvas.height / mapCanvas.getBoundingClientRect().height) * e.layerY;
             switch (e.button) {
                 case 0:
                     current_map.mode = "draw";
@@ -201,6 +334,8 @@ module.exports = {
 
         mapCanvas.addEventListener('mouseup', (e) => {
             current_map.mode = "none";
+            mouse.editorClickReleaseX = (mapCanvas.width / mapCanvas.getBoundingClientRect().width) * e.layerX;
+            mouse.editorClickReleaseY = (mapCanvas.height / mapCanvas.getBoundingClientRect().height) * e.layerY;
             console.log(current_map);
         });
         mapCanvas.addEventListener('mousemove', e => {
@@ -214,19 +349,8 @@ module.exports = {
             let mapBounds = mapCanvas.getBoundingClientRect();
             mouse.x = e.clientX;
             mouse.y = e.clientY - 32;
-
             mouse.rx = (e.clientX + 32 - document.querySelector('.sidebar').getBoundingClientRect().width) / mapBounds.width;
             mouse.ry = (e.clientY + 16 - document.querySelector('footer').getBoundingClientRect().height) / mapBounds.height;
-
-            let xhov = round(mouse.x / 32) * 32;
-            let yhov = round(mouse.y / 32) * 32;
-            clickableItems.forEach(item => {
-                const ixhov = round(item.x / 32) * 32;
-                const iyhov = round(item.y / 32) * 32;
-                if (ixhov == xhov && iyhov == yhov) {
-                    item.mouseOver();
-                }
-            })
         })
 
         window.addEventListener('resize', e => {
