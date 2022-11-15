@@ -56,7 +56,7 @@ function initializeTiles() {
                         img.onclick = function () {
                             NOW_DRAWING = {
                                 img,
-                                file: file2,
+                                file: `img/tiles/${file}/${file2}`,
                                 id: layerConf[file].layer_z
                             }
                         }
@@ -81,43 +81,25 @@ var layerTool = 0;
 var layerToolArray = [];
 (() => {
     let item = document.createElement('button');
-    item.innerText = "Pen";
+    item.innerText = "Back";
     item.onclick = function () {
-        layerTool = 0;
-        drawCurrentTiles();
     }
     layerToolArray.push(item);
 })();
 
 (() => {
     let item = document.createElement('button');
-    item.innerText = "Line";
+    item.innerText = "Save";
     item.onclick = function () {
-        layerTool = 1;
-        drawCurrentTiles();
+        try {
+            wfs(current_working_data.currentFile, JSON.stringify(current_map));
+        } catch (e) {
+            console.log(e);
+        }
     }
     layerToolArray.push(item);
 })();
 
-(() => {
-    let item = document.createElement('button');
-    item.innerText = "Rect";
-    item.onclick = function () {
-        layerTool = 2;
-        drawCurrentTiles();
-    }
-    layerToolArray.push(item);
-})();
-
-(() => {
-    let item = document.createElement('button');
-    item.innerText = "Paint";
-    item.onclick = function () {
-        layerTool = 3;
-        drawCurrentTiles();
-    }
-    layerToolArray.push(item);
-})();
 function drawCurrentTiles() {
     const lconf = Object.keys(layerConf);
 
@@ -187,8 +169,8 @@ function drawIsoGrid() {
     mapCtx.lineWidth = 1;
     for (let y = 0; y < current_map.height; y++) {
         for (let x = 0; x < current_map.width; x++) {
-            let mx = (16 + (x * 32)) + camera.x;
-            let my = (y * 16) + camera.y;
+            let mx = (16 + (x * 32)) - camera.x;
+            let my = (y * 16) - camera.y;
             mapCtx.moveTo(mx, my);
             mapCtx.lineTo(mx + 16, my + 8)
             mapCtx.lineTo(mx, my + 16);
@@ -198,13 +180,17 @@ function drawIsoGrid() {
     }
     mapCtx.stroke();
 
-    let xmouse = (round(mouse.editorX / 16) * 16);
+    let xmouse = (floor(mouse.editorX / 16) * 16);
     let ybmp = xmouse / 16 % 2 == 1 ? 0 : 8;
-    let ymouse = (round((mouse.editorY + ybmp) / 16) * 16) - ybmp;
-    if (NOW_DRAWING.img) mapCtx.drawImage(NOW_DRAWING.img, -16 + xmouse + camera.x % 32, -32 + ymouse + camera.y % 16);
-    mapCtx.drawImage(gridSelector, -16 + xmouse + camera.x % 32, -16 + ymouse + camera.y % 16);
-    const tilex = xmouse / 16;
-    const tiley = ymouse / 8;
+    let ymouse = (floor((mouse.editorY + ybmp) / 16) * 16) - ybmp;
+
+    const posx = -16 + xmouse - (camera.x % 32);
+    const posy = -32 + ymouse - (camera.y % 16);
+
+    if (NOW_DRAWING.img) mapCtx.drawImage(NOW_DRAWING.img, posx, posy);
+    mapCtx.drawImage(gridSelector, posx, -16 + ymouse - camera.y % 16);
+    const tilex = floor(posx + ((camera.x/32)*32));
+    const tiley = floor(posy + ((camera.y/16)*16));
 
     if (current_map.mode == "draw") {
         if (!current_map.tiles[DRAW_LAYER]) current_map.tiles[DRAW_LAYER] = {};
@@ -213,55 +199,9 @@ function drawIsoGrid() {
             case 0:
                 current_map.tiles[DRAW_LAYER][`${tilex}x${tiley}`] = {
                     tile: NOW_DRAWING,
-                    x: -16 + xmouse + camera.x % 32,
-                    y: -32 + ymouse + camera.y % 16
+                    x: floor(posx + ((camera.x/32)*32)),
+                    y: floor(posy + ((camera.y/16)*16))
                 }
-                break;
-
-            //line
-            case 1:
-                (() => {
-                    let angle = atan2(mouse.editorClickY - mouse.editorY, mouse.editorClickX - mouse.editorX);
-                    let distance = ((mouse.editorClickY - mouse.editorY) + (mouse.editorClickX - mouse.editorX));
-                    let iterations = round(abs(distance / 16));
-
-                    let _xdraw = mouse.editorClickX > mouse.editorX ? mouse.editorX : mouse.editorClickX;
-                    let _ydraw = mouse.editorClickY > mouse.editorY ? mouse.editorY : mouse.editorClickY;
-                    console.log(mouse)
-                    for (let k = 0; k < iterations; k++) {
-                        let ybmp = round(_xdraw / 16) % 2 == 1 ? 0 : 8;
-                        if (NOW_DRAWING.img) mapCtx.drawImage(NOW_DRAWING.img,
-                            -16 +
-                            //x pos
-                            round(_xdraw / 16) * 16
-                            + camera.x % 32,
-                            -32 +
-                            //y pos
-                            (round((_ydraw + ybmp) / 16) * 16) - ybmp
-                            + camera.y % 16);
-                        _xdraw += mouse.editorClickX > mouse.editorX ? Math.cos(angle) * 16 : -Math.cos(angle) * 16;
-                        // _ydraw += mouse.editorClickY > mouse.editorY ? Math.sin(-angle) * 16 : Math.sin(angle) * 16;
-                        if(mouse.editorClickY > mouse.editorY) {
-                        if(mouse.editorClickX >= mouse.editorX) {
-                            _ydraw += Math.sin(-angle)*16;
-                        } else {
-                            _ydraw += Math.sin(angle)*16;
-                        }
-                        } else {
-                            if(mouse.editorClickX >= mouse.editorX) {
-                                _ydraw += Math.sin(angle)*16;
-                            } else {
-                                _ydraw += Math.sin(-angle)*16;
-                            }
-                        }
-                    }
-                    mapCtx.beginPath();
-                    mapCtx.strokeStyle = "#55ff89";
-                    mapCtx.lineWidth = 1;
-                    mapCtx.moveTo(mouse.editorClickX, mouse.editorClickY);
-                    mapCtx.lineTo(mouse.editorX, mouse.editorY);
-                    mapCtx.stroke();
-                })();
                 break;
         }
     }
@@ -270,6 +210,7 @@ function drawIsoGrid() {
         if (!current_map.tiles[DRAW_LAYER]) current_map.tiles[DRAW_LAYER] = {};
         switch (layerTool) {
             case 0:
+                console.log(tilex, tiley, current_map.tiles[DRAW_LAYER], current_map.tiles[DRAW_LAYER][`${tilex}x${tiley}`])
                 delete current_map.tiles[DRAW_LAYER][`${tilex}x${tiley}`];
                 break;
         }
@@ -280,9 +221,18 @@ function drawMapTiles() {
     for (let i in current_map.tiles) {
         for (let j in current_map.tiles[i]) {
             const xy = j.split('x').map(m => parseInt(m))
-            let x = current_map.tiles[i][j].x;
-            let y = current_map.tiles[i][j].y;
-            mapCtx.drawImage(current_map.tiles[i][j].tile.img, x, y);
+            let x = current_map.tiles[i][j].x - camera.x;
+            let y = current_map.tiles[i][j].y - camera.y;
+            try {
+                mapCtx.drawImage(current_map.tiles[i][j].tile.img, x, y);
+            } catch (e) {
+                try {
+                    current_map.tiles[i][j].tile.img = new Image();
+                    current_map.tiles[i][j].tile.img.src = `${process.cwd()}/www/${current_map.tiles[i][j].tile.file}`
+                    mapCtx.drawImage(current_map.tiles[i][j].tile.img, x, y);
+                } catch (e) {
+                }
+            }
         }
     }
 }
@@ -303,8 +253,27 @@ function updateCanvasSize() {
         drawCanvasContents();
     }
 }
-
+var KEYPRESS = {};
 function loop() {
+    if (KEYPRESS['w']) {
+        shouldClear = true;
+        camera.y -= 3;
+    }
+
+    if (KEYPRESS['s']) {
+        shouldClear = true;
+        camera.y += 3;
+    }
+
+    if (KEYPRESS['a']) {
+        shouldClear = true;
+        camera.x -= 3;
+    }
+
+    if (KEYPRESS['d']) {
+        shouldClear = true;
+        camera.x += 3;
+    }
     updateCanvasSize();
 }
 
@@ -357,8 +326,15 @@ module.exports = {
             shouldClear = true;
         });
 
+        window.addEventListener('keypress', e => {
+            KEYPRESS[e.key] = true;
+        });
+        window.addEventListener('keyup', e=>{
+            KEYPRESS[e.key] = false;
+        })
         window.addEventListener('keydown', e => {
             if (busy) return;
+            
             shouldClear = true;
             const { key } = e;
             switch (key) {

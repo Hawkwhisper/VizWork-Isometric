@@ -37,6 +37,7 @@ class Menu {
             drawCurrentTiles();
             document.querySelector('.editSection').classList.add('tile_select');
             document.querySelector('.infoOverlay').innerHTML = "Editing Map";
+            current_working_data.currentFile = file;
         });
         div1.innerHTML = label;
         let div2 = this._createDeleteButtons(file);
