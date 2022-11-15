@@ -219,6 +219,9 @@ function drawIsoGrid() {
 }
 function drawMapTiles() {
     for (let i in current_map.tiles) {
+        if(Number(i) != DRAW_LAYER) {
+            mapCtx.globalAlpha = 0.5;
+        }
         for (let j in current_map.tiles[i]) {
             const xy = j.split('x').map(m => parseInt(m))
             let x = current_map.tiles[i][j].x - camera.x;
@@ -230,10 +233,12 @@ function drawMapTiles() {
                     current_map.tiles[i][j].tile.img = new Image();
                     current_map.tiles[i][j].tile.img.src = `${process.cwd()}/www/${current_map.tiles[i][j].tile.file}`
                     mapCtx.drawImage(current_map.tiles[i][j].tile.img, x, y);
+                   
                 } catch (e) {
                 }
             }
         }
+        mapCtx.globalAlpha = 1;
     }
 }
 
