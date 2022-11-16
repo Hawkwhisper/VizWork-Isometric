@@ -31,6 +31,15 @@ main {
 
 footer {
     background: #333;
+    color: #ccc;
+}
+
+footer span {
+    padding: 0.25em;
+    display: block;
+}
+footer * {
+    color: #ccc;
 }
 
 .infoOverlay {

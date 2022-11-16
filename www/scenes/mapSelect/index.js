@@ -18,7 +18,8 @@ const Scene = new class {
     }
 
     _createItems(current_working_data) {
-        const newitem = document.createElement('button');
+            document.querySelector('.infoOverlay').innerHTML = "Select a map";
+            const newitem = document.createElement('button');
         newitem.innerHTML = `New Map`;
         newitem.onclick = function() {
             showPopup("Create a new map")

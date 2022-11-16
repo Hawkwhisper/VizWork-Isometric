@@ -1,6 +1,7 @@
 const { readdir, readFile, writeFile, readFileSync, writeFileSync } = require('fs');
+const Scenes = require('../../scenes');
 
-const { floor, round, abs, atan2 } = Math;
+const { ceil, floor, round, abs, atan2, min, max, sin, cos } = Math;
 
 const rd = readdir;
 const wf = writeFile;
@@ -79,10 +80,30 @@ var layerInput
 
 var layerTool = 0;
 var layerToolArray = [];
+
+(() => {
+    let item = document.createElement('button');
+    item.innerText = "Tiles";
+    item.onclick = function () {
+    }
+    layerToolArray.push(item);
+})();
+
+(() => {
+    let item = document.createElement('button');
+    item.innerText = "Events";
+    item.onclick = function () {
+
+    }
+    layerToolArray.push(item);
+})();
+
 (() => {
     let item = document.createElement('button');
     item.innerText = "Back";
     item.onclick = function () {
+        const Scenes = require('../../scenes');
+        Scenes.MapSelect.run(current_working_data);
     }
     layerToolArray.push(item);
 })();
@@ -100,6 +121,63 @@ var layerToolArray = [];
     layerToolArray.push(item);
 })();
 
+(() => {
+    let item = document.createElement('div');
+    item.innerText = "~";
+    item.onclick = function () {
+
+    }
+    layerToolArray.push(item);
+})();
+
+(() => {
+    let item = document.createElement('div');
+    item.innerText = "~";
+    item.onclick = function () {
+
+    }
+    layerToolArray.push(item);
+})();
+
+var LOADED_EVENT_POSITIONS = [];
+(() => {
+    let item = document.createElement('button');
+    item.innerText = "loadEventData";
+    item.onclick = function () {
+        const file = document.createElement('input');
+        file.type = 'file';
+        file.click();
+        file.onchange = () => {
+            rf(file.files[0].path, (err, data) => {
+                if (err) throw err;
+                const evtData = JSON.parse(data).events;
+                LOADED_EVENT_POSITIONS = [];
+                evtData.forEach((e, i) => {
+                    console.log(e);
+                    if (e) {
+                        const spr_img = new Image();
+                        spr_img.src = `${process.cwd()}/www/img/event_icon.png`;
+                        if (!current_map.eventPositions[i]) {
+                            current_map.eventPositions[i] = {
+                                name: e.name,
+                                id: e.id,
+                                x: e.x,
+                                y: e.y
+                            };
+                        }
+                        LOADED_EVENT_POSITIONS[i] = {
+                            img: spr_img,
+                            x: current_map.eventPositions[i].x,
+                            y: current_map.eventPositions[i].y
+                        }
+                    }
+                })
+            })
+        }
+    }
+    layerToolArray.push(item);
+})();
+
 function drawCurrentTiles() {
     const lconf = Object.keys(layerConf);
 
@@ -112,7 +190,6 @@ function drawCurrentTiles() {
     });
 
     lconfValues = lconfValues.sort((a, b) => b.layer_z - a.layer_z);
-    console.log(lconfValues);
 
     document.querySelector('.sidebar').innerHTML = "";
 
@@ -147,7 +224,6 @@ function drawCurrentTiles() {
             container.appendChild(layers[i][j].img);
             try {
             } catch (e) {
-                console.log(layers[i][j].img);
             }
         }
     }
@@ -155,8 +231,12 @@ function drawCurrentTiles() {
 
 var camera = {
     x: 320,
-    y: 240
+    y: 240,
+    z: 3
 }
+
+var PREVIEW = false;
+
 function drawIsoGrid() {
     drawMapTiles();
     if (!current_map.tiles[DRAW_LAYER]) current_map.tiles[DRAW_LAYER] = {};
@@ -165,7 +245,7 @@ function drawIsoGrid() {
     // mapCanvas.height = window.innerHeight = 32;
     mapCtx.imageSmoothingEnabled = false;
     mapCtx.beginPath();
-    mapCtx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+    mapCtx.strokeStyle = 'rgba(0, 55, 255, 0.5)';
     mapCtx.lineWidth = 1;
     for (let y = 0; y < current_map.height; y++) {
         for (let x = 0; x < current_map.width; x++) {
@@ -184,13 +264,17 @@ function drawIsoGrid() {
     let ybmp = xmouse / 16 % 2 == 1 ? 0 : 8;
     let ymouse = (floor((mouse.editorY + ybmp) / 16) * 16) - ybmp;
 
-    const posx = -16 + xmouse - (camera.x % 32);
-    const posy = -32 + ymouse - (camera.y % 16);
+    const posx = -16 + xmouse - floor((camera.x % 32));
+    const posy = -32 + ymouse - floor((camera.y % 16));
 
     if (NOW_DRAWING.img) mapCtx.drawImage(NOW_DRAWING.img, posx, posy);
     mapCtx.drawImage(gridSelector, posx, -16 + ymouse - camera.y % 16);
-    const tilex = floor(posx + ((camera.x/32)*32));
-    const tiley = floor(posy + ((camera.y/16)*16));
+    const tilex = (posx + ((camera.x / 32) * 32));
+    const tiley = (posy + ((camera.y / 16) * 16));
+
+    mouse.tileX = floor((ceil(xmouse/32)*32 + camera.x)/32);
+    mouse.tileY = floor((ceil(ymouse/16)*16 + camera.y)/16);
+    document.getElementById(`footer_text`).innerHTML = `Position: x: ${mouse.tileX}, y:${mouse.tileY}`
 
     if (current_map.mode == "draw") {
         if (!current_map.tiles[DRAW_LAYER]) current_map.tiles[DRAW_LAYER] = {};
@@ -199,8 +283,8 @@ function drawIsoGrid() {
             case 0:
                 current_map.tiles[DRAW_LAYER][`${tilex}x${tiley}`] = {
                     tile: NOW_DRAWING,
-                    x: floor(posx + ((camera.x/32)*32)),
-                    y: floor(posy + ((camera.y/16)*16))
+                    x: tilex,
+                    y: tiley
                 }
                 break;
         }
@@ -210,7 +294,6 @@ function drawIsoGrid() {
         if (!current_map.tiles[DRAW_LAYER]) current_map.tiles[DRAW_LAYER] = {};
         switch (layerTool) {
             case 0:
-                console.log(tilex, tiley, current_map.tiles[DRAW_LAYER], current_map.tiles[DRAW_LAYER][`${tilex}x${tiley}`])
                 delete current_map.tiles[DRAW_LAYER][`${tilex}x${tiley}`];
                 break;
         }
@@ -219,7 +302,7 @@ function drawIsoGrid() {
 }
 function drawMapTiles() {
     for (let i in current_map.tiles) {
-        if(Number(i) != DRAW_LAYER) {
+        if (Number(i) != DRAW_LAYER && !PREVIEW) {
             mapCtx.globalAlpha = 0.5;
         }
         for (let j in current_map.tiles[i]) {
@@ -233,13 +316,15 @@ function drawMapTiles() {
                     current_map.tiles[i][j].tile.img = new Image();
                     current_map.tiles[i][j].tile.img.src = `${process.cwd()}/www/${current_map.tiles[i][j].tile.file}`
                     mapCtx.drawImage(current_map.tiles[i][j].tile.img, x, y);
-                   
+
                 } catch (e) {
                 }
             }
         }
         mapCtx.globalAlpha = 1;
     }
+
+
 }
 
 function drawCanvasContents() {
@@ -251,33 +336,45 @@ function updateCanvasSize() {
     if (shouldClear) {
         shouldClear = false;
 
-        mapCanvas.width = mapCanvas.getBoundingClientRect().width / 2;
-        mapCanvas.height = mapCanvas.getBoundingClientRect().height / 2;
+        mapCanvas.width = mapCanvas.getBoundingClientRect().width / camera.z;
+        mapCanvas.height = mapCanvas.getBoundingClientRect().height / camera.z;
 
         tileCanvas.width = tileCanvas.width;
         drawCanvasContents();
     }
 }
 var KEYPRESS = {};
+var CAMERA_SPEED = 3;
 function loop() {
+    if (KEYPRESS['shift']) {
+        CAMERA_SPEED = max(5 / camera.z, 3);
+    } else {
+        CAMERA_SPEED = max(3 / camera.z, 3);
+    }
     if (KEYPRESS['w']) {
         shouldClear = true;
-        camera.y -= 3;
+        camera.y -= CAMERA_SPEED;
     }
 
     if (KEYPRESS['s']) {
         shouldClear = true;
-        camera.y += 3;
+        camera.y += CAMERA_SPEED;
     }
 
     if (KEYPRESS['a']) {
         shouldClear = true;
-        camera.x -= 3;
+        camera.x -= CAMERA_SPEED;
     }
 
     if (KEYPRESS['d']) {
         shouldClear = true;
-        camera.x += 3;
+        camera.x += CAMERA_SPEED;
+    }
+
+    if (KEYPRESS['tab']) {
+        PREVIEW = true;
+    } else {
+        PREVIEW = false;
     }
     updateCanvasSize();
 }
@@ -291,10 +388,18 @@ module.exports = {
         mapCanvas.width = 640;
         mapCanvas.height = 360;
 
+        mapCanvas.addEventListener('keydown', (e)=>{
+            if(e.key == 'Tab') {
+                e.preventDefault();
+            }
+        })
         mapCanvas.addEventListener('mousedown', (e) => {
             shouldClear = true;
             mouse.editorClickX = (mapCanvas.width / mapCanvas.getBoundingClientRect().width) * e.layerX;
             mouse.editorClickY = (mapCanvas.height / mapCanvas.getBoundingClientRect().height) * e.layerY;
+            mouse.leftPressed = e.button==0?true:mouse.leftPressed;
+            mouse.currentlyDragging = null;
+            
             switch (e.button) {
                 case 0:
                     current_map.mode = "draw";
@@ -306,15 +411,28 @@ module.exports = {
             }
         });
 
+        mapCanvas.addEventListener('wheel', e => {
+            const { deltaY } = e;
+            if (deltaY < 0) {
+                camera.z += 0.25;
+            }
+            if (deltaY > 0) {
+                camera.z -= 0.25;
+            }
+            camera.z = min(max(camera.z, 0.5), 4);
+            shouldClear = true;
+        })
+
         mapCanvas.addEventListener('mouseup', (e) => {
             current_map.mode = "none";
+            mouse.leftPressed = e.button==0?false:mouse.leftPressed;
             mouse.editorClickReleaseX = (mapCanvas.width / mapCanvas.getBoundingClientRect().width) * e.layerX;
             mouse.editorClickReleaseY = (mapCanvas.height / mapCanvas.getBoundingClientRect().height) * e.layerY;
             console.log(current_map);
         });
         mapCanvas.addEventListener('mousemove', e => {
-            mouse.editorX = (mapCanvas.width / mapCanvas.getBoundingClientRect().width) * e.layerX;
-            mouse.editorY = (mapCanvas.height / mapCanvas.getBoundingClientRect().height) * e.layerY;
+            mouse.editorX = (mapCanvas.width / mapCanvas.getBoundingClientRect().width) * (e.layerX-8);
+            mouse.editorY = (mapCanvas.height / mapCanvas.getBoundingClientRect().height) * (e.layerY+16);
         })
 
         window.addEventListener('mousemove', (e) => {
@@ -331,15 +449,15 @@ module.exports = {
             shouldClear = true;
         });
 
-        window.addEventListener('keypress', e => {
-            KEYPRESS[e.key] = true;
-        });
-        window.addEventListener('keyup', e=>{
-            KEYPRESS[e.key] = false;
+        window.addEventListener('keyup', e => {
+            KEYPRESS[e.key.toLowerCase()] = false;
         })
         window.addEventListener('keydown', e => {
             if (busy) return;
-            
+            KEYPRESS[e.key.toLowerCase()] = true;
+            if(e.key == 'Tab') {
+                e.preventDefault();
+            }
             shouldClear = true;
             const { key } = e;
             switch (key) {
@@ -372,6 +490,9 @@ module.exports = {
     setCamera: (x, y) => {
         camera.x = x;
         camera.y = y;
+    },
+    clearCanvas() {
+        mapCanvas.width = 1;
     },
     drawCurrentTiles
 };

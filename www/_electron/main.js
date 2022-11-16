@@ -62,8 +62,6 @@ function main() {
                 current_working_data.path = `${path}/data`;
                 current_working_data.files = files2;
 
-                console.log(current_working_data);
-
                 document.querySelector(`.editSection`).style.display = 'grid';
                 document.querySelector('.infoOverlay').innerHTML = "Select a map";
 
@@ -103,6 +101,7 @@ function processNewMap() {
     const height = Number(document.getElementById('nm_dy').value);
     wf(`${current_working_data.path}/${name}.hwiso.json`, JSON.stringify({
         tiles: [],
+        eventPositions: [],
         width, height
     }), err => {
         if (err) throw err;

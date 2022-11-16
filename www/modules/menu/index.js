@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { setBusy, setCamera, drawCurrentTiles } = require('../canvas');
+const { setBusy, setCamera, drawCurrentTiles, clearCanvas } = require('../canvas');
 
 class Menu {
 
@@ -8,6 +8,8 @@ class Menu {
         this.core = core;
         this.initialize();
         this.createDomElements();
+        setBusy(true);
+        clearCanvas();
     }
 
     initialize() {
@@ -32,7 +34,7 @@ class Menu {
         div1.addEventListener("click", function() {
             current_map = JSON.parse(fs.readFileSync(file, 'utf-8'));
             setBusy(false);
-            setCamera(32, 16);
+            setCamera(0, 0);
             document.querySelector('.sidebar').innerHTML = '';
             drawCurrentTiles();
             document.querySelector('.editSection').classList.add('tile_select');
