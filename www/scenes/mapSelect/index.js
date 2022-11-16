@@ -22,7 +22,9 @@ const Scene = new class {
             const newitem = document.createElement('button');
         newitem.innerHTML = `New Map`;
         newitem.onclick = function() {
-            showPopup("Create a new map")
+            showPopup("Create a new map");
+        document.getElementById('img_slicer').style.display = 'none';
+        document.getElementById('new_map').style.display = 'block';
         }
         newitem.classList.add('newmap');
         this.sidebar.appendChild(newitem);

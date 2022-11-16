@@ -38,7 +38,7 @@ function main() {
             document.querySelector('.infoOverlay').innerHTML = "Select a map";
 
             document.getElementById('canvas_container').appendChild(tileCanvas);
-                        document.getElementById('canvas_container').appendChild(mapCanvas);
+            document.getElementById('canvas_container').appendChild(mapCanvas);
             try {
                 clearInterval(interval);
             } catch (e) {
@@ -66,7 +66,7 @@ function main() {
                 document.querySelector('.infoOverlay').innerHTML = "Select a map";
 
                 document.getElementById('canvas_container').appendChild(tileCanvas);
-                                document.getElementById('canvas_container').appendChild(mapCanvas);
+                document.getElementById('canvas_container').appendChild(mapCanvas);
                 try {
                     clearInterval(interval);
                 } catch (e) {
@@ -84,7 +84,59 @@ function main() {
         })
     });
 
-    
+    ipcRenderer.on('img_slc', (event, dir2) => {
+        let path = dir2.filePaths[0];
+        let fname = path.split('/').pop();
+        let dir = path.split('/');
+        dir.pop();
+        dir = dir.join('/');
+        showPopup("Processing Image...");
+        document.getElementById('new_map').style.display = 'none';
+        document.getElementById('img_slicer').style.display = 'block';
+        const img = new Image();
+        img.src = path;
+        const canvas = document.getElementById('img_slice_canvas');
+        const ctx = canvas.getContext('2d');
+
+        img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0)
+            let tx = 0;
+            let ty = 0;
+            let index = 0;
+            let iv = setInterval(() => {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = 32;
+                tempCanvas.height = 32;
+                const tempCtx = tempCanvas.getContext('2d');
+
+                tempCtx.drawImage(canvas, tx, ty, 32, 32, 0, 0, 32, 32);
+                const img_data = tempCanvas.toDataURL();
+                const tempImg = new Image();
+                tempImg.src = img_data;
+                wf(`${dir}/${fname}_${index}.png`, Buffer.from(img_data.replace(/data\:image\/png\;base64\,/gm, ''), 'base64'), err3 => {
+                    if (err3) throw err3;
+                    console.log(`Saved`)
+                    tx += 32;
+                    index++;
+                    if (tx > img.width) {
+                        tx = 0;
+                        ty += 32;
+                        if (ty > img.height) {
+                            clearInterval(iv);
+                            setTimeout(hidePopup, 1000);
+                        }
+                    }
+                    document.getElementById('img_slice_prev').appendChild(tempImg);
+                });
+
+            }, 1000 / 60);
+        }
+
+    });
+
+
 }
 function showPopup(title) {
     document.querySelector('.popup').style.display = "block";

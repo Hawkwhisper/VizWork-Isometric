@@ -4,7 +4,7 @@ const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron')
 
 let dir;
 
-ipcMain.on('selectDirectory', function() {
+ipcMain.on('selectDirectory', function () {
 });
 
 const template = [
@@ -17,12 +17,27 @@ const template = [
                 click: async () => {
                     dir = dialog.showOpenDialog(mainWindow, {
                         properties: ['openDirectory']
-                    }).then(d=>{
+                    }).then(d => {
                         mainWindow.webContents.send(`proj`, d);
                     });
                 }
             },
-            { label: "Save Map", },
+            {
+                label: "Image Slicer",
+                click: async () => {
+                    dir = dialog.showOpenDialog(mainWindow, {
+                        properties: ['openFile'],
+                        filters: [
+                            {
+                                name: "Images",
+                                extensions: ["png"]
+                            }
+                        ]
+                    }).then(d => {
+                        mainWindow.webContents.send(`img_slc`, d);
+                    });
+                }
+            },
             { role: "close" }
         ]
     },

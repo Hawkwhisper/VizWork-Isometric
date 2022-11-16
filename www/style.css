@@ -22,6 +22,7 @@ body {
 body {
     display: grid;
     grid-template-rows: auto 1.5em;
+    overflow: hidden;
 }
 
 main {
@@ -73,6 +74,8 @@ footer * {
     backdrop-filter: blur(2px);
     padding: 2px;
     box-shadow: 0px 0px 2px #555;
+    overflow: auto;
+    height: calc(100vh - calc(2.5em + 4px));
 }
 
 .sidebar img {
@@ -116,6 +119,19 @@ canvas.full {
     left: unset;
     right: 0px;
     pointer-events: all;
+}
+
+canvas.img_slicer img {
+    display: block;
+    position: relative;
+    margin: 0 auto;
+    box-shadow: 1px 1px 12px #00000050;
+}
+
+#img_slice_prev {
+    padding: 1px;
+    border: solid 1px #ccc;
+    margin: 1px;
 }
 
 ul.hw_ul {
