@@ -48,7 +48,15 @@ function initializeTiles() {
             rd(`${process.cwd()}/www/img/tiles/${file}`, (err, files2) => {
                 if (err) throw err;
                 layers[file] = [];
-                layerConf[file] = require(`${process.cwd()}/www/img/tiles/${file}/config.json`);
+                try {
+                    layerConf[file] = require(`${process.cwd()}/www/img/tiles/${file}/config.json`);
+                } catch(e) {
+                    layerConf[file] = {
+                        "layer_z": 0, 
+                        "modeTrigger": "wall",
+                        "collision": [false,false,false,false]
+                    }
+                }
                 files2.forEach((file2, i2) => {
                     if (file2.endsWith('.png')) {
                         const img = document.createElement('img');
