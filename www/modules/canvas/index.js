@@ -93,15 +93,18 @@ var layerToolArray = [];
     let item = document.createElement('button');
     item.innerText = "Tiles";
     item.onclick = function () {
+        layerToolArray[0].classList.add('selected');
+        layerToolArray[1].classList.remove('selected');
     }
     layerToolArray.push(item);
 })();
 
 (() => {
     let item = document.createElement('button');
-    item.innerText = "Events";
+    item.innerText = "Collision";
     item.onclick = function () {
-
+        layerToolArray[0].classList.remove('selected');
+        layerToolArray[1].classList.add('selected');
     }
     layerToolArray.push(item);
 })();
@@ -225,8 +228,11 @@ function drawCurrentTiles() {
     for (let z in lconfValues) {
         let i = lconfValues[z].title;
         const container = document.createElement('div');
-        container.innerHTML = `<code>${i}</code><hr>`;
+        const label = document.createElement('div');
+        container.classList.add('tile_container');
+        label.innerHTML = `<code>${i}</code><hr>`;
 
+        document.querySelector('.sidebar').appendChild(label);
         document.querySelector('.sidebar').appendChild(container);
         for (let j = 0; j < layers[i].length; j++) {
             container.appendChild(layers[i][j].img);
@@ -436,7 +442,6 @@ module.exports = {
             mouse.leftPressed = e.button==0?false:mouse.leftPressed;
             mouse.editorClickReleaseX = (mapCanvas.width / mapCanvas.getBoundingClientRect().width) * e.layerX;
             mouse.editorClickReleaseY = (mapCanvas.height / mapCanvas.getBoundingClientRect().height) * e.layerY;
-            console.log(current_map);
         });
         mapCanvas.addEventListener('mousemove', e => {
             mouse.editorX = (mapCanvas.width / mapCanvas.getBoundingClientRect().width) * (e.layerX-8);

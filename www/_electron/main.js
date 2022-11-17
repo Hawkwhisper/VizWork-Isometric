@@ -84,6 +84,81 @@ function main() {
         })
     });
 
+    ipcRenderer.on(`img_export`, (event, dir3) => {
+        let lowest_point_x = 0;
+        let lowest_point_y = 0;
+
+        let highest_point_x = 0;
+        let highest_point_y = 0;
+
+        let xbump = 0;
+        let ybump = 0;
+
+        current_map.tiles.forEach(layer => {
+            for (let i in layer) {
+                const xy = i.split('x').map(m => parseInt(m));
+                xy[0] -= layer[i].tile.img.width;
+                xy[1] -= layer[i].tile.img.height;
+
+                if (layer[i].tile.img.width > xbump) xbump = layer[i].tile.img.width;
+                if (layer[i].tile.img.height > ybump) ybump = layer[i].tile.img.height;
+
+                if (xy[0] < lowest_point_x) lowest_point_x = xy[0];
+                if (xy[1] < lowest_point_y) lowest_point_y = xy[1];
+
+                if (xy[0] + (layer[i].tile.img.width * 2) > highest_point_x) highest_point_x = xy[0];
+                if (xy[1] + (layer[i].tile.img.height * 2) > highest_point_y) highest_point_y = xy[1];
+            }
+        })
+        const width = Math.abs(lowest_point_x) + Math.abs(highest_point_x) + 32;
+        const height = Math.abs(lowest_point_y) + Math.abs(highest_point_y) + 32;
+
+
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+
+        const tempCanvas2 = document.createElement('canvas');
+        const tempCtx2 = tempCanvas2.getContext('2d');
+
+        tempCanvas2.width = width;
+        tempCanvas2.height = height;
+
+        current_map.tiles.forEach((layer, lid) => {
+            tempCanvas.width = width;
+            tempCanvas.height = height;
+            for (let i in layer) {
+                const xy = i.split('x').map(m => parseInt(m));
+                if (xy[0] < lowest_point_x) lowest_point_x = xy[0];
+                if (xy[1] < lowest_point_y) lowest_point_y = xy[1];
+
+                if (xy[0] > highest_point_x) highest_point_x = xy[0];
+                if (xy[1] > highest_point_y) highest_point_y = xy[1];
+                try {
+                    tempCtx.drawImage(layer[i].tile.img, xbump + xy[0], ybump + xy[1]);
+                    tempCtx2.drawImage(layer[i].tile.img, xbump + xy[0], ybump + xy[1]);
+                } catch (e) {
+                }
+            }
+            const img_data = tempCanvas.toDataURL();
+            const tempImg = new Image();
+            tempImg.src = img_data;
+            const tpath = `${require('os').homedir()}/${current_working_data.currentFile.split('/').pop()}_${lid}.png`;
+            wf(tpath, Buffer.from(img_data.replace(/data\:image\/png\;base64\,/gm, ''), 'base64'), err3 => {
+                if (err3) throw err3;
+                console.log(`Saved at ${tpath}`);
+            });
+        })
+
+        const img_data2 = tempCanvas2.toDataURL();
+        const tempImg2 = new Image();
+        tempImg2.src = img_data2;
+        const tpath2 = `${require('os').homedir()}/${current_working_data.currentFile.split('/').pop()}_full.png`;
+        wf(tpath2, Buffer.from(img_data2.replace(/data\:image\/png\;base64\,/gm, ''), 'base64'), err3 => {
+            if (err3) throw err3;
+            alert(`Image saved to ${require('os').homedir()}/ as ${tpath2}`);
+        });
+    })
+
     ipcRenderer.on('img_slc', (event, dir2) => {
         let path = dir2.filePaths[0];
         let fname = path.split('/').pop();

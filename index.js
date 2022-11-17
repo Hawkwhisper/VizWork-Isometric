@@ -43,17 +43,14 @@ const template = [
     },
     // { role: 'editMenu' }
     {
-        label: 'Edit',
+        label: 'Export',
         submenu: [
-            { role: 'undo' },
-            { role: 'redo' },
-            { type: 'separator' },
-            { role: 'cut' },
-            { role: 'copy' },
-            { role: 'paste' },
-            { role: 'delete' },
-            { type: 'separator' },
-            { role: 'selectAll' }
+            {
+                label: "As Image",
+                click: async () => {
+                    mainWindow.webContents.send(`img_export`);
+                }
+            },
         ]
     },
     // { role: 'viewMenu' }
