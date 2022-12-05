@@ -33,6 +33,10 @@ class Menu {
         let div1 = document.createElement('div');
         div1.addEventListener("click", function() {
             current_map = JSON.parse(fs.readFileSync(file, 'utf-8'));
+            if(!current_map.collisionData) current_map.collisionData = [];
+            if(!current_map.flags) current_map.flags = [];
+            if(!current_map.heightData) current_map.heightData = [];
+
             setBusy(false);
             setCamera(0, 0);
             document.querySelector('.sidebar').innerHTML = '';

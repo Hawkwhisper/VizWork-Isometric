@@ -97,21 +97,23 @@ function main() {
         current_map.tiles.forEach(layer => {
             for (let i in layer) {
                 const xy = i.split('x').map(m => parseInt(m));
-                xy[0] -= layer[i].tile.img.width;
-                xy[1] -= layer[i].tile.img.height;
-
-                if (layer[i].tile.img.width > xbump) xbump = layer[i].tile.img.width;
-                if (layer[i].tile.img.height > ybump) ybump = layer[i].tile.img.height;
-
-                if (xy[0] < lowest_point_x) lowest_point_x = xy[0];
-                if (xy[1] < lowest_point_y) lowest_point_y = xy[1];
-
-                if (xy[0] + (layer[i].tile.img.width * 2) > highest_point_x) highest_point_x = xy[0];
-                if (xy[1] + (layer[i].tile.img.height * 2) > highest_point_y) highest_point_y = xy[1];
+                try {
+                    xy[0] -= layer[i].tile.img.width;
+                    xy[1] -= layer[i].tile.img.height;
+                    if (layer[i].tile.img.width > xbump) xbump = layer[i].tile.img.width;
+                    if (layer[i].tile.img.height > ybump) ybump = layer[i].tile.img.height;
+    
+                    if (xy[0] < lowest_point_x) lowest_point_x = xy[0];
+                    if (xy[1] < lowest_point_y) lowest_point_y = xy[1];
+    
+                    if (xy[0] + (layer[i].tile.img.width * 2) > highest_point_x) highest_point_x = xy[0];
+                    if (xy[1] + (layer[i].tile.img.height * 2) > highest_point_y) highest_point_y = xy[1];
+                } catch(e) {
+                }
             }
         })
-        const width = Math.abs(lowest_point_x) + Math.abs(highest_point_x) + 32;
-        const height = Math.abs(lowest_point_y) + Math.abs(highest_point_y) + 32;
+        const width = current_map.width*32;
+        const height = current_map.height*16;
 
 
         const tempCanvas = document.createElement('canvas');

@@ -1,15 +1,24 @@
 :root {
-    --round_grad_main: radial-gradient(circle, rgb(245, 245, 245) 0%, rgb(236, 236, 236) 94%, rgb(245, 245, 245)100%);
+    --round-grad-main: radial-gradient(circle, rgb(7, 0, 7) 0%, rgba(0,3,19,1) 94%, rgba(14,0,13,1) 100%);
+    --round_grad_sub: radial-gradient(circle, rgb(245, 245, 245) 0%, rgb(236, 236, 236) 94%, rgb(245, 245, 245)100%);
 }
 
 * {
-    color: #333;
+    color: #ccc;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     user-select: none;
 }
-
+input, textarea {
+    background-color: #33333333;
+    border: solid 1px #333;
+}
+button {
+    background: #242424;
+    border: solid 1px #333;
+}
 html,
 body {
+    background: var(--round-grad-main);
     position: absolute;
     width: 100%;
     height: 100%;
@@ -25,8 +34,10 @@ body {
     overflow: hidden;
 }
 
+canvas,
+img {}
+
 main {
-    background: var(--round_grad_main);
     position: relative;
 }
 
@@ -57,6 +68,7 @@ footer * {
     z-index: 9999;
     opacity: 0.5;
     text-align: center;
+    filter: invert(100%);
 }
 
 .editSection {
@@ -69,12 +81,13 @@ footer * {
 }
 
 .sidebar {
-    background: #ddd;
+    background: #22222290;
+    backdrop-filter: blur(5px);
     margin: 0.25em;
     border-radius: 0.25em;
     backdrop-filter: blur(2px);
     padding: 2px;
-    box-shadow: 0px 0px 2px #555;
+    box-shadow: 0px 0px 2px #333;
     overflow: auto;
     height: calc(100vh - calc(2.5em + 4px));
 }
@@ -126,7 +139,7 @@ canvas.img_slicer img {
     display: block;
     position: relative;
     margin: 0 auto;
-    box-shadow: 1px 1px 12px #00000050;
+    box-shadow: 1px 1px 12px #ffffff50;
 }
 
 #img_slice_prev {
@@ -144,13 +157,13 @@ ul.hw_ul {
 ul.hw_ul li {
     display: grid;
     grid-template-columns: 60% 40%;
-    border: solid 1px #bbb;
+    border: solid 1px #4d524a;
     margin: 4px;
+    background: #33445550;
     border-radius: 5px;
 }
 
 ul.hw_ul li div {
-    background: #ffffff20;
     margin: 2px;
 }
 
@@ -166,22 +179,22 @@ ul.hw_ul li div:last-child {
 
 
 ul.hw_ul li button {
-    background: #ffffff10;
+    background: transparent;
     border: none;
     margin: 1px;
     padding: 4px;
 }
 
 ul.hw_ul li button:hover {
-    color: #ee2020;
+    color: #6bee20;
 }
 
 ul.hw_ul li:hover {
-    border-bottom-color: #ee202050;
+    border-bottom-color: #38ee2050;
 }
 
 ul.hw_ul li:hover div:first-child {
-    color: #853e3e;
+    color: #40853e;
 }
 
 .half {
@@ -218,9 +231,9 @@ ul.hw_ul li:hover div:first-child {
 }
 
 .popup .container {
-    background: #fff;
-    border: solid 1px #777;
-    box-shadow: 2px 2px 15px #000;
+    background: var(--round-grad-main);
+    border: solid 1px #333;
+    box-shadow: 2px 2px 15px #333;
     width: 640px;
     left: 50%;
     top: 50%;
@@ -232,9 +245,9 @@ ul.hw_ul li:hover div:first-child {
 }
 
 .popup .header {
-    background: #ccc;
+    background: 33333333;
     height: 1em;
-    border-bottom: solid 1px #aaa;
+    border-bottom: solid 1px #333;
     border-radius: 5px 5px 0px 0px;
     padding: 0.25em;
     color: #333;
@@ -265,17 +278,20 @@ button.full {
     width: 100%;
     padding: 4px;
     margin: 1px;
-    background: #eee;
-    border: solid 1px #aaa;
+    background: #00000050;
+    border: solid 1px #555;
     border-radius: 5px;
+    color: #ccc;
+    backdrop-filter: blur(4px);
 }
 
 button.selected {
+    color: #95ff95;
     filter: brightness(50%) contrast(120%);
 }
 
 .line {
-    border: solid 1px #ccc;
+    border: solid 1px #444;
     margin-bottom: 4px;
 }
 
@@ -284,5 +300,62 @@ button.selected {
     overflow: auto;
 }
 
-.sticky {
+.coreTileContainer {
+    height: calc(100% - 5em);
+    overflow: auto;
+    width: calc(100% - 8px);
+    position: absolute;
+    top: 6em;
 }
+
+.sticky {}
+
+.hide {
+    display: none;
+}
+
+.icon {
+    font-size: 24px;
+    width: 48px;
+    height: 48px;
+    display: inline-block;
+}
+
+.fright {
+    position: absolute;
+    right: 0px;
+}
+
+.fleft {
+    float: left;
+}
+
+.mauto {
+    margin-left: 50%;
+    transform: translateX(-50%);
+}
+
+button.icon.selected {
+    background: rgb(0, 255, 0);
+    border-radius: 5px;
+    box-shadow: none;
+    color: #333;
+}
+
+::-webkit-scrollbar {
+    width: .25em;
+  }
+   
+  ::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  }
+   
+  ::-webkit-scrollbar-thumb {
+    background-color: darkgrey;
+    outline: 1px solid slategrey;
+  }
+
+
+  button{
+    color: #ccc;
+  }
